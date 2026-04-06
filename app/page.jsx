@@ -52,7 +52,7 @@ const COLORS = [
 export default function Page() {
   const audioRefs = useRef([]);
   const [ready, setReady] = useState(false);
-  const [volumes, setVolumes] = useState(Array(TRACK_COUNT).fill(0.7));
+  const [volumes, setVolumes] = useState([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   const [master, setMaster] = useState(0.9);
   const [playing, setPlaying] = useState(false);
 
@@ -60,6 +60,7 @@ export default function Page() {
     audioRefs.current = Array.from({ length: TRACK_COUNT }, (_, i) => {
       const audio = new window.Audio(FILES[i]);
       audio.loop = true;
+      audio.preload = "auto";
       return audio;
     });
 
@@ -87,13 +88,13 @@ export default function Page() {
 
   const play = async () => {
     if (!ready) return;
+
     await Promise.all(
       audioRefs.current.map((audio) =>
-        audio.play().catch(() => {
-          return null;
-        })
+        audio.play().catch(() => null)
       )
     );
+
     setPlaying(true);
   };
 
@@ -110,16 +111,35 @@ export default function Page() {
         background: "#0a0a0b",
         color: "white",
         minHeight: "100vh",
-        padding: "20px",
+        padding: "10px",
         fontFamily: "Arial, sans-serif",
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: 30 }}>
-        <div style={{ letterSpacing: 2, fontSize: 18 }}>
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: 14,
+          maxWidth: 920,
+          marginInline: "auto",
+        }}
+      >
+        <div
+          style={{
+            letterSpacing: 1.5,
+            fontSize: 16,
+            marginBottom: 8,
+          }}
+        >
           Más allá de la emergencia
         </div>
 
-        <div style={{ fontSize: 12, opacity: 0.7, marginTop: 10, lineHeight: 1.6 }}>
+        <div
+          style={{
+            fontSize: 10,
+            opacity: 0.72,
+            lineHeight: 1.45,
+          }}
+        >
           Textos: Daniel Quaranta
           <br />
           Voz: Carmen Baliero
@@ -129,13 +149,26 @@ export default function Page() {
           Diseño de interfaz: Carolina Carrizo
         </div>
 
-        <div style={{ fontSize: 12, marginTop: 14, lineHeight: 1.6, opacity: 0.9 }}>
+        <div
+          style={{
+            fontSize: 10,
+            marginTop: 10,
+            lineHeight: 1.45,
+            opacity: 0.92,
+          }}
+        >
           Instrucciones: A continuación podrás escuchar distintas intervenciones
           realizadas sobre cuatro poemas, así como también interactuar libremente
           con la mezcla.
         </div>
 
-        <div style={{ fontSize: 12, marginTop: 14, lineHeight: 1.8 }}>
+        <div
+          style={{
+            fontSize: 10,
+            marginTop: 10,
+            lineHeight: 1.55,
+          }}
+        >
           <div style={{ color: "rgb(139,92,246)" }}>madre</div>
           <div style={{ color: "rgb(59,130,246)" }}>más allá de la emergencia</div>
           <div style={{ color: "rgb(16,185,129)" }}>palimpsesto</div>
@@ -143,24 +176,35 @@ export default function Page() {
         </div>
       </div>
 
-      <div style={{ marginBottom: 24, display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+      <div
+        style={{
+          marginBottom: 14,
+          display: "flex",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "center",
+          flexWrap: "wrap",
+          maxWidth: 920,
+          marginInline: "auto",
+        }}
+      >
         <button
           onClick={playing ? stop : play}
           style={{
             background: "white",
             color: "black",
             border: "none",
-            padding: "10px 16px",
+            padding: "8px 14px",
             borderRadius: 8,
             cursor: "pointer",
-            fontSize: 14,
+            fontSize: 13,
           }}
         >
           {playing ? "Pausar" : "Reproducir"}
         </button>
 
-        <div style={{ minWidth: 180 }}>
-          <div style={{ fontSize: 12, marginBottom: 6 }}>
+        <div style={{ width: 170 }}>
+          <div style={{ fontSize: 10, marginBottom: 4 }}>
             Volumen general: {Math.round(master * 100)}%
           </div>
           <input
@@ -177,11 +221,13 @@ export default function Page() {
 
       <div
         style={{
-          display: "flex",
-          gap: 10,
-          overflowX: "auto",
-          alignItems: "flex-end",
-          paddingBottom: 20,
+          display: "grid",
+          gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+          gap: 6,
+          alignItems: "stretch",
+          width: "100%",
+          maxWidth: 920,
+          margin: "0 auto",
         }}
       >
         {TRACKS.map((name, i) => {
@@ -192,36 +238,38 @@ export default function Page() {
             <div
               key={i}
               style={{
-                width: 88,
-                minWidth: 88,
-                padding: 10,
+                minWidth: 0,
+                padding: 6,
                 border: "1px solid rgba(255,255,255,0.12)",
-                borderRadius: 14,
+                borderRadius: 12,
                 background: `linear-gradient(to bottom, rgba(${rgb}, ${0.12 + level * 0.35}), rgba(${rgb}, 0.05))`,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: 10,
+                gap: 6,
               }}
             >
               <div
                 style={{
-                  fontSize: 10,
+                  fontSize: 8,
                   textAlign: "center",
-                  lineHeight: 1.3,
-                  minHeight: 40,
+                  lineHeight: 1.15,
+                  minHeight: 28,
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
+                  width: "100%",
+                  wordBreak: "break-word",
                 }}
               >
                 {name}
               </div>
 
-              <div style={{ fontSize: 11 }}>{Math.round(level * 100)}%</div>
+              <div style={{ fontSize: 9 }}>{Math.round(level * 100)}%</div>
 
               <div
                 style={{
-                  height: 220,
+                  height: 110,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -240,7 +288,7 @@ export default function Page() {
                   }}
                   style={{
                     transform: "rotate(-90deg)",
-                    width: 180,
+                    width: 92,
                     cursor: "pointer",
                   }}
                 />
