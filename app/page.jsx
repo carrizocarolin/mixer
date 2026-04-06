@@ -154,7 +154,7 @@ export default function Page() {
             marginBottom: 8,
           }}
         >
-          Más allá de la emergencia
+          Más allá de la emergencia - a 50 años de último golpe de estado cívico militar en argentina-
         </div>
 
         <div
