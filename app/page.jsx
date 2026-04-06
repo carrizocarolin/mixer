@@ -34,32 +34,49 @@ const COLORS = [
 ];
 
 export default function Page() {
-  const audioRefs = useRef(Array.from({ length: TRACK_COUNT }, () => new Audio()));
-
+  const audioRefs = useRef([]);
+  const [ready, setReady] = useState(false);
   const [volumes, setVolumes] = useState(Array(TRACK_COUNT).fill(0.7));
   const [master, setMaster] = useState(0.9);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {
-    audioRefs.current.forEach((a, i) => {
-      a.src = FILES[i];
-      a.loop = true;
+    audioRefs.current = Array.from({ length: TRACK_COUNT }, (_, i) => {
+      const audio = new window.Audio(FILES[i]);
+      audio.loop = true;
+      return audio;
     });
+
+    setReady(true);
+
+    return () => {
+      audioRefs.current.forEach((audio) => {
+        if (audio) {
+          audio.pause();
+          audio.src = "";
+        }
+      });
+    };
   }, []);
 
   useEffect(() => {
-    audioRefs.current.forEach((a, i) => {
-      a.volume = volumes[i] * master;
+    if (!ready) return;
+
+    audioRefs.current.forEach((audio, i) => {
+      if (audio) {
+        audio.volume = volumes[i] * master;
+      }
     });
-  }, [volumes, master]);
+  }, [volumes, master, ready]);
 
   const play = async () => {
-    await Promise.all(audioRefs.current.map(a => a.play().catch(()=>{})));
+    if (!ready) return;
+    await Promise.all(audioRefs.current.map((audio) => audio.play().catch(() => {})));
     setPlaying(true);
   };
 
   const stop = () => {
-    audioRefs.current.forEach(a => a.pause());
+    audioRefs.current.forEach((audio) => audio.pause());
     setPlaying(false);
   };
 
