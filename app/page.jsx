@@ -181,9 +181,7 @@ export default function Page() {
             opacity: 0.92,
           }}
         >
-          Instrucciones: A continuación podrás escuchar distintas intervenciones
-          realizadas sobre cuatro poemas, así como también interactuar libremente
-          con la mezcla.
+          A continuación escucharás distintas versiones de cuatro poemas. Cada slide corresponde a una intervención. Podés activar más de un volumen a la vez y combinarlos libremente entre sí para construir tu propia experiencia sonora.
         </div>
 
         <div
