@@ -49,8 +49,11 @@ const COLORS = [
   "245,158,11",
 ];
 
+const SILENT_THRESHOLD = 0.001;
+
 export default function Page() {
   const audioRefs = useRef([]);
+  const wasPausedByZeroRef = useRef(Array(TRACK_COUNT).fill(false));
   const [ready, setReady] = useState(false);
   const [volumes, setVolumes] = useState([1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   const [master, setMaster] = useState(0.9);
@@ -80,27 +83,48 @@ export default function Page() {
     if (!ready) return;
 
     audioRefs.current.forEach((audio, i) => {
-      if (audio) {
-        audio.volume = volumes[i] * master;
+      if (!audio) return;
+
+      const finalVolume = volumes[i] * master;
+      audio.volume = finalVolume;
+
+      if (finalVolume <= SILENT_THRESHOLD) {
+        if (!audio.paused) {
+          audio.pause();
+          wasPausedByZeroRef.current[i] = true;
+        }
+        return;
+      }
+
+      if (playing && (audio.paused || wasPausedByZeroRef.current[i])) {
+        audio.play().catch(() => null);
+        wasPausedByZeroRef.current[i] = false;
       }
     });
-  }, [volumes, master, ready]);
+  }, [volumes, master, ready, playing]);
 
   const play = async () => {
     if (!ready) return;
 
-    await Promise.all(
-      audioRefs.current.map((audio) =>
-        audio.play().catch(() => null)
-      )
-    );
-
     setPlaying(true);
+
+    await Promise.all(
+      audioRefs.current.map((audio, i) => {
+        const finalVolume = volumes[i] * master;
+        if (!audio || finalVolume <= SILENT_THRESHOLD) return Promise.resolve(null);
+        wasPausedByZeroRef.current[i] = false;
+        return audio.play().catch(() => null);
+      })
+    );
   };
 
   const stop = () => {
-    audioRefs.current.forEach((audio) => {
-      if (audio) audio.pause();
+    audioRefs.current.forEach((audio, i) => {
+      if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+      wasPausedByZeroRef.current[i] = false;
     });
     setPlaying(false);
   };
